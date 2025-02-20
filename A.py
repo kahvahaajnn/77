@@ -19,10 +19,11 @@ keys = {}
 
 # Predefined list of image URLs (replace with your URLs)
 IMAGE_URLS = [
-    "https://t.me/jwhu7hwbsnn/166?single",  # Replace with real image URLs
-    "https://t.me/jwhu7hwbsnn/122",
-    "https://t.me/jwhu7hwbsnn/122",
-    "https://t.me/jwhu7hwbsnn/122"
+    "https://www.pexels.com/photo/man-and-woman-kissing-near-pendant-lamp-1321287/",  # Replace with real image URLs
+    "https://depositphotos.com/photo/cropped-view-passionate-girl-lingerie-undressing-businessman-bed-320401438.html",
+    "https://depositphotos.com/photo/cropped-view-passionate-girl-lingerie-undressing-businessman-bed-320401438.html",
+    "https://depositphotos.com/photo/close-up-top-above-high-angle-view-portrait-of-his-he-her-she-nice-lovely-334208536.html",
+    "https://depositphotos.com/photo/close-up-top-above-high-angle-view-portrait-of-his-he-her-she-nice-lovely-334208536.html",
 ]
 
 def load_data():
