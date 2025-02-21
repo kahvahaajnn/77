@@ -90,7 +90,7 @@ async def genkey(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                 ]
                 markup = InlineKeyboardMarkup(keyboard)
 
-                response = f"?? **KEY GENERATED**\n\n**YOUR KEY**: `{key}`\n\n**VALIDITY**: `{expiration_date}`\n\nRedeem your key using: `/redeem`"
+                response = f"🔑 **KEY GENERATED**\n\n**YOUR KEY**: `{key}`\n\n**VALIDITY**: `{expiration_date}`\n\nRedeem your key using: `/redeem`"
                 await update.message.reply_text(response, reply_markup=markup)
             except ValueError:
                 response = f"USAGE /genkey 1 HOURS and DAYS"
@@ -107,7 +107,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     key = query.data  # The key is sent as callback_data
     # Send the key as a message to the user
     await query.answer()  # Acknowledge the callback
-    await query.message.reply_text(f"?? **YOUR KEY**: `{key}`")
+    await query.message.reply_text(f"🥂 **YOUR KEY**: `{key}`")
 
 async def redeem(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = str(update.message.from_user.id)
@@ -158,11 +158,11 @@ async def bgmi(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_photo(
         photo=random_image, 
         caption=(
-            f"✅ **TARGET SET**\n\n"
-            f"**TARGET IP**: `{target_ip}`\n"
-            f"**PORT**: `{port}`\n"
-            f"**DURATION**: `{duration}`\n\n"
-            "🛑 Press **/start** to begin the attack."
+            f"✅ **𝑻𝑨𝑹𝑮𝑬𝑻 𝑺𝑬𝑻 𝑺𝑼𝑪𝑪𝑬𝑺𝑺𝑭𝑼𝑳𝑳**\n\n"
+            f"🍆 **𝐭𝐚𝐫𝐠𝐞𝐭 𝐢𝐩**: `{target_ip}`\n"
+            f"🍿 **𝐩𝐨𝐫𝐭**: `{port}`\n"
+            f"⏱️ **𝐝𝐮𝐫𝐚𝐭𝐨𝐢𝐧**: `{duration}`\n\n"
+            "😈 Press **/start** to begin the attack."
         )
     )
 
@@ -188,14 +188,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     flooding_process = subprocess.Popen(flooding_command)
     
     # Send attack start message with all details including IP, Port, Duration, and Username
-    await update.message.reply_text(
-        f"✅ **ATTACK STARTED!**\n\n"
-        f"**TARGET IP**: `{flooding_command[1]}`\n"
-        f"**PORT**: `{flooding_command[2]}`\n"
-        f"**DURATION**: `{flooding_command[3]}`\n"
-        f"**USERNAME**: @{username}\n"
-        f"\nSend feedback to the owner @GODxAloneBOY."
-    )
+    await update.message.reply_text('✅ **ATTACK STARTED**\nUse **/stop** to stop the attack.')
 
 async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     global flooding_process
